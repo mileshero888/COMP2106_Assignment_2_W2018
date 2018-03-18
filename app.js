@@ -8,7 +8,15 @@ var bodyParser = require('body-parser');
 var index = require('./routes/index');
 var users = require('./routes/users');
 
+var mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
+
 var app = express();
+
+
+mongoose.connect('mongodb://admin:admin2018@ds012578.mlab.com:12578/buzzdb')
+  .then(() =>  console.log('connection succesful'))
+  .catch((err) => console.error(err));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
