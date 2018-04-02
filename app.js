@@ -5,18 +5,25 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
-var index = require('./routes/index');
-var users = require('./routes/users');
+// references we added
+const mongoose = require('mongoose');
+const config = require('./config/globals');
 
-var mongoose = require('mongoose');
-mongoose.Promise = global.Promise;
+
+ 
+
+
+// auth packages
+const passport = require('passport');
+const session = require('express-session');
+const localStrategy = require('passport-local').Strategy;
+const googleStrategy = require('passport-google-oauth').OAuth2Strategy;
+
+var index = require('./controllers/index');
+const cars = require('./controllers/cars');
+const products = require('./controllers/products');
 
 var app = express();
-
-
-mongoose.connect('mongodb://admin:admin2018@ds012578.mlab.com:12578/buzzdb')
-  .then(() =>  console.log('connection succesful'))
-  .catch((err) => console.error(err));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -30,8 +37,51 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// db connection
+mongoose.connect(config.db)
+.then(() =>  console.log('connection succesful'))
+  .catch((err) => console.error(err));
+
+// passport configuration
+app.use(session({
+    secret: 'any string for salting here',
+    resave: true,
+    saveUninitialized: false
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+// reference User model
+const User = require('./models/user');
+
+passport.use(User.createStrategy());
+
+// google auth strategy
+passport.use(new googleStrategy({
+   clientID: config.google.googleClientId,
+   clientSecret: config.google.googleClientSecret,
+   callbackURL: config.google.googleCallbackUrl,
+    profileFields: ['id', 'emails']
+},
+    (accessToken, refreshToken, profile, callback) => {
+        User.findOrCreate({
+            googleId: profile.id,
+            username: profile.emails[0].value
+        }, (err, user) => {
+            return callback(err, user);
+        });
+    }
+));
+
+// session management for users
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+// map controller paths
 app.use('/', index);
-app.use('/users', users);
+app.use('/cars', cars);
+app.use('/products', products);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

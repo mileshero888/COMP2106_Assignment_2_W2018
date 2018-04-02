@@ -1,3 +1,23 @@
-<h1><%= message %></h1>
-<h2><%= error.status %></h2>
-<pre><%= error.stack %></pre>
+<% include ../shared/header.ejs %>
+
+<h1>Product Details</h1>
+
+<form method="post">
+    <fieldset class="form-group">
+        <label class="control-label col-md-2" for="name">ProductName: *</label>
+        <input name="ProductName" id="ProductName" required value="<%= product.ProductName %>" />
+    </fieldset>
+    <fieldset class="form-group">
+        <label class="control-label col-md-2" for="country">Price: *</label>
+        <input name="Price" id="Price" required type="number" min="1" value="<%= product.Price %>" />
+    </fieldset>
+    <fieldset class="form-group">
+        
+        <label class="control-label col-md-2" for="yearFounded">Year Founded: *</label>
+        <textarea name="Description" id="Description" required cols="20" rows="5" ><%= product.Description %></textarea>
+    </fieldset>
+
+    <button class="offset-2 btn btn-primary">Save</button>
+</form>
+
+<% include ../shared/footer.ejs %>
