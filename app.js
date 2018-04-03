@@ -15,12 +15,14 @@ const config = require('./config/globals');
 
 // auth packages
 const passport = require('passport');
+//var passportLinkedIn = require('../auth/linkedin');
+
 const session = require('express-session');
 const localStrategy = require('passport-local').Strategy;
 const googleStrategy = require('passport-google-oauth').OAuth2Strategy;
+var LinkedInStrategy = require('passport-linkedin');
 
 var index = require('./controllers/index');
-const cars = require('./controllers/cars');
 const products = require('./controllers/products');
 
 var app = express();
@@ -74,13 +76,45 @@ passport.use(new googleStrategy({
     }
 ));
 
+passport.use(new LinkedInStrategy({
+    consumerKey: config.linkedin.clientID,
+    consumerSecret: config.linkedin.clientSecret,
+    callbackURL: config.linkedin.callbackURL
+  },
+  // linkedin sends back the tokens and progile info
+  function(token, tokenSecret, profile, done) {
+
+    
+
+    var searchQuery = {
+      username: profile.displayName
+    };
+
+    var updates = {
+      username: profile.displayName,
+      googleId: profile.id
+    };
+
+    var options = {};
+
+    // update the user if s/he exists or add a new user
+    User.findOneAndUpdate(searchQuery, updates, options, function(err, user) {
+      if(err) {
+        return done(err);
+      } else {
+        return done(null, user);
+      }
+    });
+  }
+
+));
+
 // session management for users
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 // map controller paths
 app.use('/', index);
-app.use('/cars', cars);
 app.use('/products', products);
 
 // catch 404 and forward to error handler

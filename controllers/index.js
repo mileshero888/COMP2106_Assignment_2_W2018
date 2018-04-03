@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const Product = require('../models/products');
 
 // auth references
 const passport = require('passport');
@@ -12,6 +13,24 @@ router.get('/', (req, res, next) => {
     message: 'Buzz Ads - Classified Ads Application',
       user: req.user
   });
+});
+
+
+// GET: /products
+router.get('/shop', (req, res, next) => {
+    // get make documents from db
+    Product.find((err, products) => {
+        if (err) {
+            console.log(err);
+        }
+        else {
+            res.render('shop', {
+                title: 'Buzz Ads - Shop',
+                products: products,
+                user: req.user
+            });
+        }
+    });
 });
 
 // GET: /about
@@ -78,7 +97,7 @@ router.get('/login', (req, res, next) => {
 
 // POST: /login
 router.post('/login', passport.authenticate('local', {
-  successRedirect: '/cars',
+  successRedirect: '/',
     failureRedirect: '/login',
     failureMessage: 'Invalid Login'
 }));
@@ -110,8 +129,19 @@ router.get('/google/callback', passport.authenticate('google', {
 }),
     // successful google auth
     (req, res, next) => {
-       res.redirect('/cars');
+       res.redirect('/');
     }
 );
+//var passportLinkedIn = require('../auth/linkedin');
+router.get('/auth/linkedin', passport.authenticate('linkedin'));
+
+router.get('/auth/linkedin/callback',
+  passport.authenticate('linkedin', { failureRedirect: '/login',failureMessage: 'Invalid Login' }),
+  function(req, res) {
+    // Successful authentication
+    //res.json(req.user);
+    res.redirect('/');
+  });
+
 
 module.exports = router;

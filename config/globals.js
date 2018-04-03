@@ -7,5 +7,11 @@ module.exports = {
         googleClientSecret: 'LzdJTRtImz3F54kNV-wrfZyK',
         //googleCallbackUrl: 'http://localhost:3000/google/callback'
         googleCallbackUrl: 'https://comp2106-cartracker.herokuapp.com/google/callback'
-    }
+    },
+  "linkedin": {
+    clientID: '81zuepmrdedbdf',
+    clientSecret: 'UnLycUGf1Tqv1nzA',
+    callbackURL: "http://localhost:3000/auth/linkedin/callback"
+  },
+ 
 };
